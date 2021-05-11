@@ -56,6 +56,9 @@ cc_library(
             "Hlms/Pbs/src/*.inc",
             "Hlms/Pbs/src/Cubemaps/*.cpp",
             "Hlms/Pbs/src/InstantRadiosity/*.cpp",
+            "Hlms/Pbs/src/IrradianceField/*.cpp",
+            "Hlms/Pbs/src/LightProfiles/*.cpp",
+            "Hlms/Pbs/src/Vct/*.cpp",
         ],
     ),
     hdrs = glob(
