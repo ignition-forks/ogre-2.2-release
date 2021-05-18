@@ -79,7 +79,8 @@ cmake_configure_file(
     out = "OgreMain/include/OgreGL3PlusBuildSettings.h",
     cmakelists = ["RenderSystems/CMakeLists.txt"],
     defines = [
-        "OGRE_GLSUPPORT_USE_GLX=1",
+        "OGRE_CONFIG_UNIX_NO_X11=0",
+        "OGRE_GLSUPPORT_USE_GLX=0",
         "OGRE_GLSUPPORT_USE_EGL_HEADLESS=1",
     ],
     visibility = ["//visibility:private"],
@@ -227,8 +228,6 @@ cc_library(
     ],
     deps = [
         ":ogre_main_headers",
-        "@X//:SM",
-        "@X//:Xaw",
         "@X//:Xrandr",
         "@freeimage",
         "@freetype2",
