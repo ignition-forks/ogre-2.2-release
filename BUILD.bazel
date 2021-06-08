@@ -69,6 +69,7 @@ cmake_configure_file(
         "OGRE_SET_DISABLE_AMD_AGS=0",
         "OGRE_SET_ENABLE_LIGHT_OBB_RESTRAINT=0",
         "OGRE_SET_IDSTRING_ALWAYS_READABLE=0",
+        "OGRE_CONFIG_UNIX_NO_X11=1",
     ],
     visibility = ["//visibility:private"],
 )
@@ -79,7 +80,7 @@ cmake_configure_file(
     out = "OgreMain/include/OgreGL3PlusBuildSettings.h",
     cmakelists = ["RenderSystems/CMakeLists.txt"],
     defines = [
-        "OGRE_GLSUPPORT_USE_GLX=1",
+        "OGRE_GLSUPPORT_USE_GLX=0",
         "OGRE_GLSUPPORT_USE_EGL_HEADLESS=1",
     ],
     visibility = ["//visibility:private"],
@@ -94,7 +95,6 @@ main_srcs = glob(
         "OgreMain/src/Compositor/*.cpp",
         "OgreMain/src/Compositor/**/*.cpp",
         "OgreMain/src/Compute/*.cpp",
-        "OgreMain/src/GLX/*.cpp",
         "OgreMain/src/stbi/*.c",
         "OgreMain/src/Hash/*.cpp",
         "OgreMain/src/nedmalloc/*.c",
@@ -115,7 +115,11 @@ main_srcs = glob(
         "OgreMain/src/OgreZip.cpp",
         "OgreMain/src/OgreSTBICodec.cpp",
     ],
-)
+) + [
+    "OgreMain/src/GLX/OgreTimer.cpp",
+    "OgreMain/src/GLX/OgreErrorDialog.cpp",
+    "OgreMain/src/GLX/OgreFileSystemLayer.cpp"
+]
 
 main_hdrs = glob(
     [
@@ -124,7 +128,6 @@ main_hdrs = glob(
         "OgreMain/include/*.inl",
         "OgreMain/include/debugbreak/*.h",
         "OgreMain/src/GLX/*.h",
-        "OgreMain/include/GLX/*.h",
         "OgreMain/src/stbi/*.h",
         "OgreMain/src/nedmalloc/*.h",
         "OgreMain/include/Hash/*.h",
@@ -149,6 +152,10 @@ main_hdrs = glob(
     "OgreMain/src/OgreSIMDHelper.h",
     "OgreMain/include/OgreBuildSettings.h",
     "OgreMain/include/OgreGL3PlusBuildSettings.h"
+] + [
+    "OgreMain/include/GLX/OgreTimerImp.h",
+    "OgreMain/include/GLX/OgreErrorDialogImp.h",
+    "OgreMain/include/Emscripten/OgreConfigDialogImp.h",
 ]
 
 cc_library(
@@ -170,44 +177,37 @@ cc_library(
 ogre_gl_support_hdrs = glob(
     [
         "RenderSystems/GL3Plus/include/*.h",
-        "RenderSystems/GL3Plus/include/GL/*.h",
-        "RenderSystems/GL3Plus/include/GLSL/*.h",
         "RenderSystems/GL3Plus/include/Vao/*.h",
-        "RenderSystems/GL3Plus/include/windowing/*.h",
-        "RenderSystems/GL3Plus/include/windowing/GLX/*.h",
-        "RenderSystems/GL3Plus/include/windowing/EGL/*.h",
-        "RenderSystems/GL3Plus/include/windowing/EGL/PBuffer/*.h",
-        "RenderSystems/GL3Plus/src/windowing/*.h",
-        "RenderSystems/GL3Plus/src/windowing/GLX/*.h",
+        "RenderSystems/GL3Plus/include/GLSL/*.h",
+
         "RenderSystems/GL3Plus/src/windowing/EGL/*.h",
+        "RenderSystems/GL3Plus/include/windowing/EGL/*.h",
+
+        "RenderSystems/GL3Plus/include/windowing/EGL/PBuffer/*.h",
+
+        "RenderSystems/GL3Plus/include/GL/*.h",
     ],
 )
 
 ogre_gl_support_includes = [
     "RenderSystems/GL3Plus/include",
-    "RenderSystems/GL3Plus/include/GL",
-    "RenderSystems/GL3Plus/include/GLSL",
     "RenderSystems/GL3Plus/include/Vao",
-    "RenderSystems/GL3Plus/include/windowing",
-    "RenderSystems/GL3Plus/include/windowing/GLX",
+    "RenderSystems/GL3Plus/include/GLSL",
+
+    "RenderSystems/GL3Plus/src/windowing/EGL",
     "RenderSystems/GL3Plus/include/windowing/EGL",
 
-    "RenderSystems/GL3Plus/src/GLSL/include",
-    "RenderSystems/GL3Plus/src/windowing",
-    "RenderSystems/GL3Plus/src/windowing/GLX",
-    "RenderSystems/GL3Plus/include",
-    "RenderSystems/GL3Plus/include/GLSL",
+    "RenderSystems/GL3Plus/include/GL",
 ]
 
 ogre_gl_support_srcs = glob(
     [
-        "RenderSystems/GL3Plus/src/windowing/EGL/*.cpp",
-        "RenderSystems/GL3Plus/src/windowing/EGL/PBuffer/*.cpp",
-        "RenderSystems/GL3Plus/src/windowing/GLX/*.cpp",
-        "RenderSystems/GL3Plus/src/windowing/*.cpp",
-        "RenderSystems/GL3Plus/src/GLSL/*.cpp",
-        "RenderSystems/GL3Plus/src/Vao/*.cpp",
         "RenderSystems/GL3Plus/src/*.cpp",
+        "RenderSystems/GL3Plus/src/Vao/*.cpp",
+        "RenderSystems/GL3Plus/src/GLSL/*.cpp",
+
+        "RenderSystems/GL3Plus/src/windowing/EGL/*.h",
+        "RenderSystems/GL3Plus/src/windowing/EGL/PBuffer/*.cpp",
     ],
 )
 
@@ -227,9 +227,6 @@ cc_library(
     ],
     deps = [
         ":ogre_main_headers",
-        "@X//:SM",
-        "@X//:Xaw",
-        "@X//:Xrandr",
         "@freeimage",
         "@freetype2",
         "@gl//:EGL",
