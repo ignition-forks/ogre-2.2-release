@@ -193,6 +193,9 @@ namespace Ogre
         /// Sets colour and alpha individually, turns mSeparateBlend on.
         void setBlendType( SceneBlendType colour, SceneBlendType alpha );
 
+        /// Sets mSeparateBlend to true or false based on current settings
+        void calculateSeparateBlendMode();
+
         /** Sometimes you want to force the RenderQueue to render back to front even if
             the object isn't alpha blended (e.g. you're rendering refractive materials)
         @param bForceTransparent
@@ -396,8 +399,17 @@ namespace Ogre
             Compare function to use. Default is CMPF_ALWAYS_PASS, which means disabled.
             Note: CMPF_ALWAYS_FAIL is not supported. Set a negative threshold to
             workaround this issue.
+        @param shadowCasterOnly
+            When true, only the caster should use alpha testing.
+            Useful if you want alpha blending (i.e. transparency) while rendering normally,
+            but want semi-transparent shadows.
+        @param useAlphaFromTextures
+            Whether you want the diffuse texture's alpha to influence the alpha test
+            Most likely you want this to be true, unless you're customizing the
+            shader and have special use for alpha testing
         */
-        virtual void setAlphaTest( CompareFunction compareFunction, bool shadowCasterOnly = false );
+        virtual void setAlphaTest( CompareFunction compareFunction, bool shadowCasterOnly = false,
+                                   bool useAlphaFromTextures = true );
         CompareFunction getAlphaTest(void) const;
         bool            getAlphaTestShadowCasterOnly(void) const;
 

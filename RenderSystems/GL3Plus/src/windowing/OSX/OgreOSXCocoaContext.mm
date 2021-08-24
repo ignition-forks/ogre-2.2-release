@@ -27,8 +27,8 @@ THE SOFTWARE.
 */
 
 #import "OgreOSXCocoaContext.h"
-#include "OgreGL3PlusRenderSystem.h"
-#include "OgreRoot.h"
+#import "OgreGL3PlusRenderSystem.h"
+#import "OgreRoot.h"
 
 namespace Ogre
 {
@@ -58,7 +58,7 @@ namespace Ogre
 	{
 		NSOpenGLContext *cloneCtx = [[NSOpenGLContext alloc] initWithFormat:mNSGLPixelFormat shareContext:mNSGLContext];
 		[cloneCtx copyAttributesFromContext:mNSGLContext withMask:0];
-		return OGRE_NEW CocoaContext(cloneCtx, mNSGLPixelFormat);
+		return new CocoaContext(cloneCtx, mNSGLPixelFormat);
 	}
 
 	NSOpenGLContext* CocoaContext::getContext()
@@ -71,3 +71,4 @@ namespace Ogre
 		return mNSGLPixelFormat;
 	}
 }
+

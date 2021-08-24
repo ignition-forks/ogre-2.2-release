@@ -245,21 +245,20 @@ namespace Ogre
         }
     }
     //-----------------------------------------------------------------------------------
-    void GL3PlusVaoManager::getMemoryStats( const Block &block, size_t vboIdx, size_t poolCapacity,
-                                            LwString &text, MemoryStatsEntryVec &outStats,
-                                            Log *log ) const
+    void GL3PlusVaoManager::getMemoryStats( const Block &block, size_t vboIdx, size_t poolIdx,
+                                            size_t poolCapacity, LwString &text,
+                                            MemoryStatsEntryVec &outStats, Log *log ) const
     {
         if( log )
         {
             text.clear();
-            text.a( c_vboTypes[vboIdx], ";",
-                    (uint64)block.offset, ";",
-                    (uint64)block.size, ";",
-                    (uint64)poolCapacity );
+            text.a( c_vboTypes[vboIdx], ";", (uint64)block.offset, ";", (uint64)block.size, ";" );
+            text.a( (uint64)poolIdx, ";", (uint64)poolCapacity );
             log->logMessage( text.c_str(), LML_CRITICAL );
         }
 
-        MemoryStatsEntry entry( (uint32)vboIdx, block.offset, block.size, poolCapacity );
+        MemoryStatsEntry entry( (uint32)vboIdx, (uint32)poolIdx, block.offset, block.size,
+                                poolCapacity );
         outStats.push_back( entry );
     }
     //-----------------------------------------------------------------------------------
@@ -276,7 +275,7 @@ namespace Ogre
         LwString text( LwString::FromEmptyPointer( &tmpBuffer[0], tmpBuffer.size() ) );
 
         if( log )
-            log->logMessage( "Pool Type;Offset;Size Bytes;Pool Capacity", LML_CRITICAL );
+            log->logMessage( "Pool Type;Offset;Size Bytes;Pool Idx;Pool Capacity", LML_CRITICAL );
 
         for( int vboIdx=0; vboIdx<MAX_VBO_FLAG; ++vboIdx )
         {
@@ -286,6 +285,7 @@ namespace Ogre
             while( itor != end )
             {
                 const Vbo &vbo = *itor;
+                const size_t poolIdx = static_cast<size_t>( itor - mVbos[vboIdx].begin() );
                 capacityBytes += vbo.sizeBytes;
 
                 Block usedBlock( 0, 0 );
@@ -303,29 +303,40 @@ namespace Ogre
 
                         while( itBlock != enBlock )
                         {
-                            if( nextBlock->offset < itBlock->offset )
+                            if( itBlock->offset < nextBlock->offset )
                                 nextBlock = itBlock;
                             ++itBlock;
                         }
                     }
 
                     freeBytes += nextBlock->size;
-                    usedBlock.size = nextBlock->offset;
+                    usedBlock.size = nextBlock->offset - usedBlock.offset;
 
                     //usedBlock.size could be 0 if:
                     //  1. All of memory is free
                     //  2. There's two contiguous free blocks, which should not happen
                     //     due to mergeContiguousBlocks
                     if( usedBlock.size > 0u )
-                        getMemoryStats( usedBlock, vboIdx, vbo.sizeBytes, text, statsVec, log );
+                    {
+                        getMemoryStats( usedBlock, vboIdx, poolIdx, vbo.sizeBytes, text, statsVec, log );
+                    }
 
                     usedBlock.offset += usedBlock.size;
                     usedBlock.size = 0;
                     efficientVectorRemove( freeBlocks, nextBlock );
                 }
 
-                if( usedBlock.size > 0u || (usedBlock.offset == 0 && usedBlock.size == 0) )
-                    getMemoryStats( usedBlock, vboIdx, vbo.sizeBytes, text, statsVec, log );
+                if( usedBlock.size > 0u || ( usedBlock.offset == 0 && usedBlock.size == 0 ) )
+                {
+                    if( vbo.freeBlocks.empty() )
+                    {
+                        // Deal with edge case when we're 100% full
+                        OGRE_ASSERT_LOW( usedBlock.offset == 0 && usedBlock.size == 0 );
+                        usedBlock.offset = 0u;
+                        usedBlock.size = vbo.sizeBytes;
+                    }
+                    getMemoryStats( usedBlock, vboIdx, poolIdx, vbo.sizeBytes, text, statsVec, log );
+                }
 
                 ++itor;
             }
