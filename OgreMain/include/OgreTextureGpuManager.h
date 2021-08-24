@@ -494,6 +494,7 @@ namespace Ogre
         //Counts how many times mMutex.tryLock returned false in a row
         uint32              mTryLockMutexFailureCount;
         uint32              mTryLockMutexFailureLimit;
+        bool                mLastUpdateIsStreamingDone;
         bool                mAddedNewLoadRequests;
         ThreadData          mThreadData[2];
         StreamingData       mStreamingData;
@@ -689,6 +690,30 @@ namespace Ogre
         */
         bool _update( bool syncWithWorkerThread );
 
+        /** Returns true if we're done loading all textures based on the return value of the
+            last call to TextureGpuManager::_update and whether new tasks have been scheduled
+            since then.
+
+        @remark
+            Do NOT call this in a loop e.g.
+
+            @code
+                // Do not do this
+                while( textureGpuManager->isDoneStreaming() )
+                    Sleep( 1 );
+            @endcode
+
+            Because it will spin forever!
+            The return value of this function changes whenever TextureGpuManager::_update
+            is called (directly or indirectly).
+
+            The main purpose for this function is to poll whether we're done streaming
+            so that e.g. users can show/hide a loading screen or loading icon.
+
+            If you need to wait until all textures are done, use waitForStreamingCompletion
+        */
+        bool isDoneStreaming( void ) const;
+
         /// Blocks main thread until are pending textures are fully loaded.
         void waitForStreamingCompletion(void);
 
@@ -873,6 +898,25 @@ namespace Ogre
                           const String &folderPath, set<String>::type &savedTextures,
                           bool saveOitd, bool saveOriginal,
                           HlmsTextureExportListener *listener );
+
+        /** Checks if the given format with the texture flags combination is supported
+
+        @param format
+        @param textureFlags
+            See TextureFlags::TextureFlags
+            Supported flags are:
+                NotTexture
+                RenderToTexture
+                Uav
+                AllowAutomipmaps
+
+            When NotTexture is set, we don't check whether it's possible to sample from
+            this texture. Note that some buggy Android drivers may report that it's not
+            possible to sample from that texture when it actually is.
+        @return
+            True if supported. False otherwise
+        */
+        virtual bool checkSupport( PixelFormatGpu format, uint32 textureFlags ) const;
 
     protected:
         /// Returns false if the entry was not found in the cache
