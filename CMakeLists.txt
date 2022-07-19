@@ -637,7 +637,7 @@ if (OGRE_BUILD_TESTS AND 0)
 endif ()
 
 # Setup samples
-add_subdirectory(Samples)
+#add_subdirectory(Samples)
 
 # Add android JNI binding
 if(ANDROID AND OGRE_BUILD_ANDROID_JNI_SAMPLE)
@@ -658,9 +658,9 @@ endif ()
 add_subdirectory(Docs)
 
 # Install media files
-if (OGRE_INSTALL_SAMPLES OR OGRE_INSTALL_SAMPLES_SOURCE)
-  add_subdirectory(Samples/Media)
-endif ()
+#if (OGRE_INSTALL_SAMPLES OR OGRE_INSTALL_SAMPLES_SOURCE)
+#  add_subdirectory(Samples/Media)
+#endif ()
 
 # Install CMake modules
 add_subdirectory(CMake)
