@@ -1,0 +1,147 @@
+load(
+    "//ign_bazel:build_defs.bzl",
+    "IGNITION_ROOT",
+)
+
+cc_library(
+    name = "hlms_common_headers",
+    includes = ["Hlms/Common/include"],
+    hdrs = glob(
+        [
+            "Hlms/Common/include/*.h",
+            "Hlms/Common/include/*.inl",
+        ],
+    ),
+)
+
+cc_library(
+    name = "hlms_common",
+    srcs = glob(
+        [
+            "Hlms/Common/src/*.cpp",
+        ],
+    ),
+    hdrs = glob(
+        [
+            "Hlms/Common/include/*.h",
+            "Hlms/Common/include/*.inl",
+        ],
+    ),
+    visibility = ["//visibility:public"],
+    strip_include_prefix = "Hlms/Common/include",
+    include_prefix = "Hlms/Common",
+    deps = [
+        ":hlms_common_headers",
+        IGNITION_ROOT + "ogre2:ogre_main",
+    ],
+    alwayslink = 1,
+)
+
+cc_library(
+    name = "hlms_pbs_headers",
+    includes = ["Hlms/Pbs/include"],
+    hdrs = glob(
+        [
+            "Hlms/Pbs/include/*.h",
+            "Hlms/Pbs/include/**/*.h",
+        ],
+    ),
+)
+
+cc_library(
+    name = "hlms_pbs",
+    srcs = glob(
+        [
+            "Hlms/Pbs/src/*.cpp",
+            "Hlms/Pbs/src/*.inc",
+            "Hlms/Pbs/src/Cubemaps/*.cpp",
+            "Hlms/Pbs/src/InstantRadiosity/*.cpp",
+            "Hlms/Pbs/src/IrradianceField/*.cpp",
+            "Hlms/Pbs/src/LightProfiles/*.cpp",
+            "Hlms/Pbs/src/Vct/*.cpp",
+        ],
+    ),
+    hdrs = glob(
+        [
+            "Hlms/Pbs/include/*.h",
+            "Hlms/Pbs/include/**/*.h",
+        ],
+    ),
+    visibility = ["//visibility:public"],
+    strip_include_prefix = "Hlms/Pbs/include",
+    include_prefix = "Hlms/Pbs",
+    deps = [
+        ":hlms_common",
+        ":hlms_pbs_headers",
+        IGNITION_ROOT + "ogre2:ogre_main",
+    ],
+    alwayslink = 1,
+)
+
+cc_library(
+    name = "hlms_unlit_headers",
+    includes = ["Hlms/Unlit/include"],
+    hdrs = glob(
+        [
+            "Hlms/Unlit/include/*.h",
+        ],
+    ),
+)
+
+cc_library(
+    name = "hlms_unlit",
+    srcs = glob(
+        [
+            "Hlms/Unlit/src/*.cpp",
+            "Hlms/Unlit/src/*.inc",
+        ],
+    ),
+    hdrs = glob(
+        [
+            "Hlms/Unlit/include/*.h",
+        ],
+    ),
+    visibility = ["//visibility:public"],
+    strip_include_prefix = "Hlms/Unlit/include",
+    include_prefix = "Hlms/Unlit",
+    deps = [
+        ":hlms_common",
+        ":hlms_unlit_headers",
+        IGNITION_ROOT + "ogre2:ogre_main",
+    ],
+    alwayslink = 1,
+)
+
+cc_library(
+    name = "overlay_headers",
+    includes = ["Overlay/include"],
+    hdrs = glob(
+        [
+            "Overlay/include/*.h",
+        ],
+    ),
+)
+
+cc_library(
+    name = "overlay",
+    srcs = glob(
+        [
+            "Overlay/src/*.cpp",
+        ],
+    ),
+    hdrs = glob(
+        [
+            "Overlay/include/*.h",
+        ],
+    ),
+    visibility = ["//visibility:public"],
+    strip_include_prefix = "Overlay/include",
+    include_prefix = "Overlay",
+    deps = [
+        ":overlay_headers",
+        ":hlms_unlit",
+        IGNITION_ROOT + "ogre2:ogre_main",
+        "@freetype2",
+    ],
+    alwayslink = 1,
+)
